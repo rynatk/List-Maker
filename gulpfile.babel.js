@@ -5,6 +5,7 @@ import source from 'vinyl-source-stream';
 import browserSync from 'browser-sync';
 import sass from 'gulp-sass';
 import ghPages from 'gh-pages';
+import gutil from 'gulp-util';
 
 const sync = browserSync.create();
 
@@ -21,11 +22,15 @@ gulp.task('script', () => {
       entries: ['./src/scripts/main.js'],
       extension: ['.js'],
       debug: true
-    }).transform(babelify).bundle()
-    .on('error', function(err) {
-      console.log(err.toString());
-      this.emit("end");
-    })
+    }).transform(babelify.configure({
+      optional: ['es7.classProperties']
+    })).bundle()
+    .on('error', gutil.log)
+    // }).transform(babelify).bundle()
+    // .on('error', function(err) {
+    //   console.log(err.toString());
+    //   this.emit("end");
+    // })
     .pipe(source('bundle.js'))
     .pipe(gulp.dest('dist'))
     .pipe(sync.reload({
@@ -47,7 +52,7 @@ gulp.task('styles', () => {
 gulp.task('build', ['html', 'script', 'styles']);
 
 gulp.task('deploy', ['build'], () => {
-  ghPages.publish('dist'));
+  ghPages.publish('dist');
 });
 
 gulp.task('serve', ['build'], () => {
